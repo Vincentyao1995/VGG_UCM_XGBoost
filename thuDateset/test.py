@@ -27,8 +27,8 @@ if __name__ == "__main__":
     # loss = tools.loss(logits, y_)
     # accuracy = tools.accuracy(logits, y_)
     saver = tf.train.Saver()
-    ckpt = tf.train.get_checkpoint_state(config.checkpoint_path)
-
+    ckpt = tf.train.get_checkpoint_state(config.ucm_checkpoint_path)
+    print(ckpt)
     if ckpt and ckpt.model_checkpoint_path:
         global_step = ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1]
         print('step: ', global_step)
