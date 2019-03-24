@@ -21,6 +21,7 @@ import tensorflow as tf
 from input_data import get_files, get_batch, get_batch_datasetVersion
 import VGG
 import tools
+import input_data
 
 # %%
 IMG_W = 256

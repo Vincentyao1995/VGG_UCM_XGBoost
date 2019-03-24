@@ -9,13 +9,36 @@ import sys
 sys.path.append('./')
 from input_data import get_batch, get_files
 import time
+import utils
 
 BATCH_SIZE = 16
 learning_rate = 0.001
 MAX_STEP = 15000  # it took me about one hour to complete the training.
 IS_PRETRAIN = True
 CAPACITY = 256
+
+dataset_config = {
+    'nwpu':
+        {'checkpoint_path': config.nwpu_checkpoint_path,
+         'n_class': config.nwpu_n_class,
+         'data_path': config.nwpu_data_path,
+         'class2label': config.nwpu_class2label
+         },
+    'ucm':
+        {'checkpoint_path': config.ucm_checkpoint_path,
+         'n_class': config.ucm_n_class,
+         'data_path': config.ucm_data_path,
+         'class2label': config.ucm_class2label
+         },
+    'thu':
+        {'checkpoint_path': config.aid_checkpoint_path,
+         'n_class': config.aid_n_class,
+         'data_path': config.aid_data_root_path,
+         'class2label': config.aid_class2label
+         }}
+
 # %%   Training
+
 def train_aid():
     pre_trained_weights = r'/media/jsl/ubuntu/pretrain_weight/vgg16.npy'
     data_train_dir = os.path.join(config.aid_data_root_path, 'train')
@@ -90,16 +113,55 @@ def train_aid():
     end_time = time.strftime('%Y-%m-%d %H-%M-%S', time.localtime(time.time()))
     print('end_time:', end_time)
 
+def test_vgg_single_img(image_path):
 
-if __name__ == "__main__":
+    global dataset_config
+
+    dataset = dataset_config['ucm']
+
     img_path = tf.placeholder(tf.string)
     img_content = tf.read_file(img_path)
     img = tf.image.decode_image(img_content, channels=3)
 
     # img = tf.image.resize_image_with_crop_or_pad(img, config.IMG_W, config.IMG_H)
-    img2 =tf.image.resize_nearest_neighbor([img],[config.IMG_H,config.IMG_W])
+    img2 = tf.image.resize_nearest_neighbor([img], [config.IMG_H, config.IMG_W])
+
+    x = tf.placeholder(tf.float32, shape=[1, config.IMG_W, config.IMG_H, 3])
+    y_ = tf.placeholder(tf.int16, shape=[1, config.N_CLASSES])
+
+    logits = VGG.VGG16N(x, config.N_CLASSES, False)
+
+    predict = tf.argmax(logits, 1)
+    # true_label = tf.argmax(label_batch, 1)
+    # loss = tools.loss(logits, y_)
+    # accuracy = tools.accuracy(logits, y_)
+    saver = tf.train.Saver()
+    ckpt = tf.train.get_checkpoint_state(dataset['checkpoint_path'])
+    matrix_confusion = np.zeros((dataset['n_class'], dataset['n_class']))
+    if ckpt and ckpt.model_checkpoint_path:
+        global_step = ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1]
+        print('step: ', global_step)
+        i = 0
+        with tf.Session() as sess:
+            saver.restore(sess, ckpt.model_checkpoint_path)
+            img_content = sess.run(img2, feed_dict={img_path: image_path})
+            pre = sess.run(predict, feed_dict={x: img_content})
+            print('prediction:%d' % pre)
+
+
+def test_vgg_dataset():
+    global dataset_config
+
+    dataset = dataset_config['ucm']
+
+    img_path = tf.placeholder(tf.string)
+    img_content = tf.read_file(img_path)
+    img = tf.image.decode_image(img_content, channels=3)
+
+    # img = tf.image.resize_image_with_crop_or_pad(img, config.IMG_W, config.IMG_H)
+    img2 = tf.image.resize_nearest_neighbor([img], [config.IMG_H, config.IMG_W])
     # with tf.Session() as sess:
-    #     mm2 = sess.run(img2,feed_dict={img_path:'hd_0578.jpg'})[0]
+    #     mm2 = sess.run(img2,feed_dict={img_path:'hd_0613.jpg'})[0]
     #     print(mm2.shape)
     #     plt.imshow(mm2)
     #
@@ -114,8 +176,8 @@ if __name__ == "__main__":
     # loss = tools.loss(logits, y_)
     # accuracy = tools.accuracy(logits, y_)
     saver = tf.train.Saver()
-    ckpt = tf.train.get_checkpoint_state(config.nwpu_checkpoint_path)
-    matrix_confusion = np.zeros((config.nwpu_n_class, config.nwpu_n_class))
+    ckpt = tf.train.get_checkpoint_state(dataset['checkpoint_path'])
+    matrix_confusion = np.zeros((dataset['n_class'], dataset['n_class']))
     if ckpt and ckpt.model_checkpoint_path:
         global_step = ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1]
         print('step: ', global_step)
@@ -123,17 +185,27 @@ if __name__ == "__main__":
         with tf.Session() as sess:
             i = 0
             saver.restore(sess, ckpt.model_checkpoint_path)
-            val_data_path = os.path.join(config.nwpu_data_path, 'validation')
+            val_data_path = os.path.join(dataset['data_path'], 'validation')
             for val_class_name in os.listdir(val_data_path):
                 class_path = os.path.join(val_data_path, val_class_name)
-                class_index = config.nwpu_class2label[val_class_name]
+                class_index = dataset['class2label'][val_class_name]
                 for val_img_name in os.listdir(class_path):
                     val_img_path = os.path.join(class_path, val_img_name)
                     img_content = sess.run(img2, feed_dict={img_path: val_img_path})
                     pre = sess.run(predict, feed_dict={x: img_content})
                     print(class_index, pre)
                     matrix_confusion[class_index][pre] += 1
-        np.savetxt('nwpu_vgg_confusion_matrix', matrix_confusion)
 
-    # train_aid()
+        utils.plot_confusion_matrix(matrix_confusion,
+                                    normalize=False,
+                                    target_names=config.ucm_class,
+                                    title="Confusion Matrix")
+        np.savetxt('ucm_vgg_confusion_matrix', matrix_confusion)
+
+if __name__ == "__main__":
+    img_path = r'/home/vincent/Desktop/jsl thesis/GradTest_vinny/UCM/dataset_rotated/validation/chaparral/chaparral03.jpg'
+    test_vgg_single_img(img_path)
+
+
+
 

@@ -3,7 +3,7 @@ import numpy as np
 
 
 # %%
-def conv(layer_name, x, out_channels, kernel_size=[3, 3], stride=[1, 1, 1, 1], is_pretrain=True):
+def conv(layer_name, x, out_channels, kernel_size=[3, 3],  =[1, 1, 1, 1], is_pretrain=True):
     '''Convolution op wrapper, use RELU activation after convolution
     Args:
         layer_name: e.g. conv1, pool1...

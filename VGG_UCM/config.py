@@ -30,7 +30,7 @@ img_Width = 256
 img_Height = 256
 test_batch_size = 20
 n_class = 21
-checkpoint_path = r'/media/jsl/ubuntu/log/VGG16_UCM/logs/train'
+checkpoint_path = r'/home/vincent/Desktop/jsl thesis/GradTest_vinny/UCM/dataset_rotated/logs/train/'
 
 
 

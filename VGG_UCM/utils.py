@@ -1,11 +1,24 @@
 import cv2
 #import gdal
 import matplotlib.pyplot as plt
-# from libtiff import TIFF
+from libtiff import TIFF
 import numpy as np
 import config
 import os
 import shutil
+
+def pca_process(tif_path, jpg_path):
+    #convert tiff to jpg
+    if tif_path == None or jpg_path == None:
+        tif_path = r'/home/vincent/Desktop/jsl thesis/GradTest_vinny/obit/OBT-20181214-0016-sub.tif'
+        jpg_path =  r'/home/vincent/Desktop/jsl thesis/GradTest_vinny/obit/OBT-20181214-0016-sub.jpg'
+    jpg_img = convert_img_tif2jpg(tif_path, jpg_path)
+
+    from sklearn.decomposition import PCA
+    estimator = PCA(n_components=3)
+    rsImg_img = estimator.fit_transform(jpg_img[0])
+    rsImg_img.imwrite(r'/home/vincent/Desktop/jsl thesis/GradTest_vinny/obit/OBT-20181214-0016-sub_pca3.jpg')
+
 
 
 def convert_img_tif2jpg(tif_path, jpg_path):
@@ -24,6 +37,7 @@ def convert_img_tif2jpg(tif_path, jpg_path):
     # plt.imshow(img)
     # plt.show()
     cv2.imwrite(jpg_path, img)
+    return img
 
 
 def print_class2lable(data_train_path):
@@ -233,8 +247,7 @@ if __name__ == '__main__':
 
     import pandas as pd
     cm_path = r'/home/vincent/Desktop/jsl thesis/grad thesis/learn_dp/thuDateset/classfier/ucm_vgg_confusion_matrix'
-    cm = pd.read_csv(cm_path, sep = '')
-    for i in cm:
+    cm = pd.read_csv(cm_path, sep = ' ')
 
     plot_confusion_matrix(cm,
                             normalize    = False,

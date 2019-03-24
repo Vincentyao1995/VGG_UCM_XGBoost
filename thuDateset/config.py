@@ -6,7 +6,7 @@ learning_rate = 0.001
 MAX_STEP = 15000  # it took me about one hour to complete the training.
 IS_PRETRAIN = True
 CAPACITY = 256
-ucm_checkpoint_path = r'/media/jsl/ubuntu/log/ucm/logs/train'
+ucm_checkpoint_path = r'/home/vincent/Desktop/jsl thesis/GradTest_vinny/UCM/dataset_rotated/logs/train/'
 nwpu_checkpoint_path = r''
 # ------------ db config ------------
 db_host = 'localhost'
@@ -65,7 +65,7 @@ ucm_root_path_fea_tune = r'/media/jsl/ubuntu/data/UCMerced_LandUse/fea_tune_root
 ucm_root_path_fea_enhance_tune = r'/media/jsl/ubuntu/data/UCMerced_LandUse/enhance_fea_root'
 ucm_xgboost_model_path = r'/media/jsl/ubuntu/model/model_xgboost_ucm/pima.pickle.dat'
 ucm_svm_model_path = r'/media/jsl/ubuntu/model/model_svm_ucm/svm_ucm.dat'
-ucm_data_path = r'/media/jsl/ubuntu/data/UCMerced_LandUse/jpgImages_rotate/jpgImages_rotate'
+ucm_data_path = r'/home/vincent/Desktop/jsl thesis/GradTest_vinny/UCM/dataset_rotated/'
 ucm_n_class = 21
 # ------------ NWPU config------------
 nwpu_class = ['airplane',
